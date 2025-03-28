@@ -15,7 +15,7 @@
 #  <xbar.var>string(VAR_PATH="/usr/local/bin/podman"): Absolute path to podman binary</xbar.var>
 #  <xbar.var>string(VAR_BREW_PATH="/usr/local/bin/brew"): Absolute path to Homebrew 'brew' binary</xbar.var>
 
-PURPLE='\033[0;35m'
+GRAY='\033[1;30m'
 NC='\033[0m'
 
 # For some reason, this isn't working to open plugin configuration screen (below)
@@ -25,12 +25,13 @@ if [[ -f "${VAR_PATH}" ]]; then
   alias podman="${VAR_PATH}"
   running_machine="$(podman machine list | grep 'Currently running' | awk '{print $1}' | sed 's/*//g')"
   if [[ "${running_machine}" != "" ]]; then
-    echo -e "${PURPLE}pod${NC}man✅"
+    mem_usage=$(podman stats --no-stream --format "{{.MemUsage}}" | awk '{sum += $1} END {if (sum == "") print "0 MB"; else printf "%d MB", sum}')
+    echo -e "↑ ${GRAY}${mem_usage}"
     echo "---"
     echo "Currently running: ${running_machine}"
     echo "Stop machine: ${running_machine} | shell=${VAR_PATH} | param1=machine | param2=stop | param3=${running_machine} | refresh=true"
   else
-    echo -e "${PURPLE}pod${NC}man❎"
+    echo -e "↓"
     echo "---"
     echo "Start available machines:"
     all_machines=`podman machine list --noheading --format "{{.Name}}"`
@@ -39,7 +40,7 @@ if [[ -f "${VAR_PATH}" ]]; then
     done
   fi
 else 
-  echo -e "${PURPLE}pod${NC}man⚠️"
+  echo -e "pod ⚠️"
   echo "---"
   echo "Cannot find Podman at: '${VAR_PATH}'"
   echo "Try installing Podman or updating plugin configuration with corect path"
